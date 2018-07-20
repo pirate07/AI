@@ -1,8 +1,13 @@
-import sys
-sys.setrecursionlimit(10000000)
+import copy
 c=0
+res=[]
+filled=0
+waste=0
+result=[]
+wastelist=[]
 def fillA(x,y):
     global count
+    
     x=4
     count+=1
     checkanddo(x,y)
@@ -35,22 +40,31 @@ def frBA(x,y):
     checkanddo(x,y)
 def porA(x,y):
     global count
+    global waste
+    waste+=x
+    r=x
     x=0
     count+=1
     checkanddo(x,y)
+    waste-=r
 def porB(x,y):
     global count
+    global waste
+    waste+=y
+    r=y
     y=0
     count+=1
     checkanddo(x,y)
+    waste-=r
 def checkanddo(x,y):
     global count
     global c
     global states
     global result
+    global res
+    global waste
     if (x,y) in states:
         states.append((x,y))
-        print(states)
         states.pop(-1)
         pass
     elif x==0 and y==0:
@@ -68,8 +82,9 @@ def checkanddo(x,y):
         states.pop(-1)
     elif x==2 and y==0:
         states.append((x,y))
-        print(states)
-        
+        result=copy.deepcopy(states)
+        res.append(result)
+        wastelist.append(waste)
         c+=1
         states.pop(-1)
     elif x==3 and y==0:
@@ -189,3 +204,8 @@ count=0
 checkanddo(A,B)
 print(count)
 print(c)
+for var in  range(len(res)) :
+    print("{}\n liters wasted:{} Liters".format(res[var],wastelist[var]))
+print("\n\n\n\n\n")
+print(res[wastelist.index(min(wastelist))])
+print("Least water wasted:{} liters".format(min(wastelist)))
