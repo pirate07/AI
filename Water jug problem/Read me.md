@@ -16,3 +16,5 @@ Output:
 All possible list are prited in the first 255 rows
 After that the total number of nodes are printed to reach every possible answer of the problem
 The number of branches that lead to the answer (2,0) or Jug A is filled 2 lit and jug B is Empty is printed 
+Classwjp.py
+It is the implementation of water jug problems using classes
