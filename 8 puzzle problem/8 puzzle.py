@@ -2,10 +2,9 @@ import numpy
 import copy
 import sys
 sys.setrecursionlimit(3000)
+sup=0
+Notval=0
 def moveleft(obj):
-    if obj.last=='right':
-        return None
-    else:
         frame=Block(obj.Mat,obj,'left')
         index=ndindex(frame.Mat,0)
         frame.Mat[index[0]][index[1]]=frame.Mat[index[0]][index[1]-1]
@@ -13,9 +12,6 @@ def moveleft(obj):
         frame.hue=frame.calcheuristic()
         return frame
 def moveright(obj):
-    if obj.last=='left':
-        return None
-    else:
         frame=Block(obj.Mat,obj,'right')
         index=ndindex(frame.Mat,0)
         frame.Mat[index[0]][index[1]]=frame.Mat[index[0]][index[1]+1]
@@ -23,9 +19,6 @@ def moveright(obj):
         frame.hue=frame.calcheuristic()
         return frame
 def moveup(obj):
-    if obj.last=='down':
-        return None
-    else:
         frame=Block(obj.Mat,obj,'up')
         index=ndindex(frame.Mat,0)
         frame.Mat[index[0]][index[1]]=frame.Mat[index[0]-1][index[1]]
@@ -33,9 +26,6 @@ def moveup(obj):
         frame.hue=frame.calcheuristic()
         return frame
 def movedown(obj):
-    if obj.last=='up':
-        return None
-    else:
         frame=Block(obj.Mat,obj,'down')
         index=ndindex(frame.Mat,0)
         frame.Mat[index[0]][index[1]]=frame.Mat[index[0]+1][index[1]]
@@ -54,6 +44,27 @@ def ndindex(ndarray, item):
                 return [i] + ndindex(subarray, item)
             except:
                 pass
+def solvable_or_not(mat):
+    k=mat.flatten()
+    index=numpy.argwhere(k==0)
+    k=numpy.delete(k,index)
+    count=0
+    i=0
+    while i<8:
+        j=i
+        while j<8:
+            if k[i]>k[j]:
+                count+=1
+            j+=1
+        i+=1
+    if count%2==0:
+        return mat
+    else:
+        a = numpy.arange(9)
+        numpy.random.shuffle(a)
+        a=numpy.reshape(a,(3,3))
+        a=solvable_or_not(a)
+        return a
 class Block:
     result=None
     checklist=[]
@@ -70,42 +81,53 @@ class Block:
         self.hue=None
     def calcheuristic(self):
         heu=0
-        selectedmat=self.Mat
         for var in self.Mat:
             for ele in var:
-                if ele!=0:
                    x=ndindex(Block.Thematrix,ele)
                    y=ndindex(self.Mat,ele) 
                    total=abs((x[0]-y[0]))+abs((x[1]-y[1]))
                    heu+=total
         return heu
     def heudecider(self):
+        global sup
+        global Notval
         minvalue=1000
         Block.NOT+=1
         list=copy.deepcopy(Block.checklist)
         for var in list:
             for varvar in var:
-                if varvar==None:
+                if varvar.check_parent(varvar.Mat):
+                    Block.checklist=[]
+                    pass
+                elif varvar==None:
                     pass
                 elif (varvar.hue) < (minvalue):
+                    for per in Block.selected:
+                        del per
                     Block.selected=[]
                     Block.selected.append(varvar)
                     minvalue=varvar.hue
-                    Notval=Block.NOT
-                    selectedmat=varvar.Mat
                     Block.checklist=[]
                 elif (varvar.hue) == (minvalue):
                         Block.selected.append(varvar) 
-        abc=Block.selected
         for var in Block.selected:
-            if Block.NOT==3000:
-                return
             if var.hue==0:
                 Block.result=var
                 return
             else:
                     var.Decider()
         self.heudecider()
+    def check_parent(self,mat):
+        if self.parent!=None:
+            if (mat == self.parent.Mat).all():
+                return 1
+            else:
+                if(self.parent.check_parent(mat)):
+                    return 1
+                else:
+                    return 0
+        else:
+            return 0
     def path(self):
         Block.theway.append(self.Mat)
         Block.direction.append(self.last)
@@ -161,6 +183,7 @@ class Block:
 a = numpy.arange(9)
 numpy.random.shuffle(a)
 a=numpy.reshape(a,(3,3))
+a=solvable_or_not(a)
 start=Block(a,None,'none')
 start.Decider()
 k=Block.result
